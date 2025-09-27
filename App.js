@@ -4,6 +4,7 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Provider as PaperProvider, TextInput, Button, Text, Card } from 'react-native-paper';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
   const [ingredients, setIngredients] = useState('');
