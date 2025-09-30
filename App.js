@@ -49,6 +49,16 @@ export default function App() {
     }
   };
 
+  const removeFavorite = async (recipeId) => {
+    try {
+      const updated = favorites.filter((fav) => fav.id !== recipeId);
+      setFavorites(updated);
+      await AsyncStorage.setItem('favorites', JSON.stringify(updated));
+    } catch (error) {
+      console.error('Failed to remove favorite', error);
+    }
+  };
+
   const handleSearch = async () => {
     if (!ingredients.trim()) return;
 
@@ -157,7 +167,16 @@ export default function App() {
                     style={[styles.card, styles.favoriteCard]}
                     onPress={() => openRecipe(recipe)}
                   >
-                    <Card.Title title={recipe.title} />
+                    <Card.Title
+                      title={recipe.title}
+                      right={(props) => (
+                        <IconButton
+                          {...props}
+                          icon="delete"
+                          onPress={() => removeFavorite(recipe.id)}
+                        />
+                      )}
+                    />
                     <Card.Cover source={{ uri: recipe.image }} />
                   </Card>
                 ))}
