@@ -1,3 +1,4 @@
+import { Divider, useTheme } from "react-native-paper";
 import * as React from 'react';
 import { useState } from 'react';
 import {StyleSheet, View, ScrollView } from 'react-native';
