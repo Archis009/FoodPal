@@ -27,11 +27,22 @@ export default function App() {
 
   const saveFavorite = async (recipe) => {
     try {
+      if (favorites.some(fav => fav.id === recipe.id)) return; // prevent dupes
       const updated = [...favorites, recipe];
       setFavorites(updated);
       await AsyncStorage.setItem('favorites', JSON.stringify(updated));
     } catch (error) {
       console.error('Failed to save favorite', error);
+    }
+  };
+
+  const removeFavorite = async (recipeId) => {
+    try {
+      const updated = favorites.filter(fav => fav.id !== recipeId);
+      setFavorites(updated);
+      await AsyncStorage.setItem('favorites', JSON.stringify(updated));
+    } catch (error) {
+      console.error('Failed to remove favorite', error);
     }
   };
 
@@ -102,12 +113,21 @@ export default function App() {
               <Text variant="headlineSmall" style={{ marginTop: 20 }}>
                 ❤️ Favorites
               </Text>
-              {favorites.map((recipe) => (
-                <Card key={`f-${recipe.id}`} style={{ marginBottom: 15 }}>
-                  <Card.Title title={recipe.title} />
-                  <Card.Cover source={{ uri: recipe.image }} />
-                </Card>
-              ))}
+          {favorites.map((recipe) => (
+            <Card key={`f-${recipe.id}`} style={{ marginBottom: 15 }}>
+              <Card.Title 
+                title={recipe.title} 
+                right={(props) => (
+                  <IconButton 
+                    {...props} 
+                    icon="delete" 
+                    onPress={() => removeFavorite(recipe.id)} 
+                  />
+                )}
+              />
+              <Card.Cover source={{ uri: recipe.image }} />
+            </Card>
+          ))}
             </>
           )}
         </ScrollView>
