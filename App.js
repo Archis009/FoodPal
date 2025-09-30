@@ -94,7 +94,11 @@ export default function App() {
           {recipes
             .filter(recipe => !favorites.some(fav => fav.id === recipe.id)) // remove duplicates
             .map((recipe) => (
-              <Card key={`r-${recipe.id}`} style={{ marginBottom: 15 }}>
+              <Card key={`r-${recipe.id}`} style={{ 
+              marginBottom: 15, 
+              borderRadius: 12, 
+              elevation: 3,
+            }}>
                 <Card.Title 
                   title={recipe.title} 
                   right={(props) => (
@@ -105,33 +109,42 @@ export default function App() {
                     />
                   )} 
                 />
-                <Card.Cover source={{ uri: recipe.image }} />
+                <Card.Cover source={{ uri: recipe.image }} style={{ borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}/>
               </Card>
           ))}
 
-          {favorites.length > 0 && (
-            <>
-              <Text variant="headlineSmall" style={{ marginTop: 20 }}>
-                ❤️ Favorites
-              </Text>
-          {favorites.map((recipe) => (
-            <Card key={`f-${recipe.id}`} style={{ marginBottom: 15 }}>
-              <Card.Title 
-                title={recipe.title} 
-                right={(props) => (
-                  <IconButton 
-                    {...props} 
-                    icon="delete" 
-                    onPress={() => removeFavorite(recipe.id)} 
-                  />
-                )}
-              />
-              <Card.Cover source={{ uri: recipe.image }} />
-            </Card>
-          ))}
-            </>
-          )}
-        </ScrollView>
+         {favorites.length > 0 && (
+    <>
+      {/* Divider before favorites */}
+      <Divider style={{ marginVertical: 20 }} />
+
+      <Text 
+        variant="headlineSmall" 
+        style={{ marginBottom: 10, fontWeight: "bold" }}
+      >
+        ❤️ Favorites
+      </Text>
+
+      {favorites.map((recipe) => (
+        <Card 
+          key={`f-${recipe.id}`} 
+          style={{ 
+            marginBottom: 15, 
+            borderRadius: 12,
+            elevation: 5, // stronger shadow
+            backgroundColor: "#fce4ec", // light pink for favorites
+          }}
+        >
+          <Card.Title title={recipe.title} />
+          <Card.Cover 
+            source={{ uri: recipe.image }} 
+            style={{ borderBottomLeftRadius: 12, borderBottomRightRadius: 12 }}
+          />
+        </Card>
+      ))}
+    </>
+  )}
+</ScrollView>
         </View>
       </SafeAreaView>
     </PaperProvider>
