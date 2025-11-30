@@ -1,151 +1,124 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, Image, Keyboard } from 'react-native';
+import { Text, TextInput, Button, Card, ActivityIndicator, useTheme, IconButton } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  TextInput,
-  Button,
-  Text,
-  Card,
-  IconButton,
-  Portal,
-  Modal,
-  ActivityIndicator,
-} from 'react-native-paper';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { searchRecipesByIngredients } from '../services/api';
 
-export default function HomeScreen() {
-  const [ingredients, setIngredients] = useState('');
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [details, setDetails] = useState(null);
-  const [detailsLoading, setDetailsLoading] = useState(false);
+export default function HomeScreen({ navigation }) {
+    const theme = useTheme();
+    const [ingredients, setIngredients] = useState('');
+    const [recipes, setRecipes] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-  const handleSearch = async () => {
-    if (!ingredients.trim()) return;
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        'https://api.spoonacular.com/recipes/findByIngredients',
-        {
-          params: {
-            ingredients,
-            number: 8,
-            apiKey: '419f38b7553444588e6960fe89d3a0c6', // replace with your key or env
-          },
+    const handleSearch = async () => {
+        if (!ingredients.trim()) return;
+
+        Keyboard.dismiss();
+        setLoading(true);
+        try {
+            const data = await searchRecipesByIngredients(ingredients);
+            setRecipes(data);
+        } catch (error) {
+            // Error handling is managed in api service logs for now
+        } finally {
+            setLoading(false);
         }
-      );
-      setRecipes(response.data || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const saveFavorite = async (recipe) => {
-    try {
-      const saved = await AsyncStorage.getItem('favorites');
-      const list = saved ? JSON.parse(saved) : [];
-      if (list.some((f) => f.id === recipe.id)) return;
-      const updated = [...list, recipe];
-      await AsyncStorage.setItem('favorites', JSON.stringify(updated));
-    } catch (e) {
-      console.error('saveFavorite', e);
-    }
-  };
-
-  const fetchDetails = async (id) => {
-    setDetailsLoading(true);
-    try {
-      const res = await axios.get(
-        `https://api.spoonacular.com/recipes/${id}/information`,
-        {
-          params: { apiKey: '419f38b7553444588e6960fe89d3a0c6' },
-        }
-      );
-      setDetails(res.data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setDetailsLoading(false);
-    }
-  };
-
-  const openRecipe = (recipe) => {
-    setSelectedRecipe(recipe);
-    fetchDetails(recipe.id);
-  };
-
-  const closeRecipe = () => {
-    setSelectedRecipe(null);
-    setDetails(null);
-  };
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.inner}>
-        <Text variant="headlineMedium" style={styles.title}>
-          🍴 FoodPal
-        </Text>
-
-        <TextInput
-          label="Enter ingredients (comma separated)"
-          value={ingredients}
-          onChangeText={setIngredients}
-          mode="outlined"
-          style={styles.input}
-        />
-
-        <Button mode="contained" onPress={handleSearch} loading={loading}>
-          Find Recipes
-        </Button>
-
-        <ScrollView style={{ marginTop: 20 }}>
-          {recipes.map((r) => (
-            <Card key={r.id} style={styles.card} onPress={() => openRecipe(r)}>
-              <Card.Title
-                title={r.title}
-                right={(props) => (
-                  <IconButton {...props} icon="heart" onPress={() => saveFavorite(r)} />
-                )}
-              />
-              <Card.Cover source={{ uri: r.image }} />
-            </Card>
-          ))}
-        </ScrollView>
-
-        <Portal>
-          <Modal visible={!!selectedRecipe} onDismiss={closeRecipe} contentContainerStyle={styles.modal}>
-            {detailsLoading ? (
-              <ActivityIndicator animating />
-            ) : details ? (
-              <ScrollView>
-                <Text variant="headlineSmall">{details.title}</Text>
-                <Card.Cover source={{ uri: details.image }} />
-                <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Ingredients:</Text>
-                {details.extendedIngredients?.map((ing) => <Text key={ing.id}>- {ing.original}</Text>)}
-                <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Instructions:</Text>
-                <Text>
-                  {details.instructions ? details.instructions.replace(/<\/?[^>]+(>|$)/g, '') : 'No instructions available.'}
+    return (
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+            <View style={styles.header}>
+                <Text variant="displaySmall" style={[styles.title, { color: theme.colors.primary }]}>
+                    FoodPal 🍴
                 </Text>
-              </ScrollView>
-            ) : (
-              <Text>No details available.</Text>
-            )}
-          </Modal>
-        </Portal>
-      </View>
-    </SafeAreaView>
-  );
+                <Text variant="bodyLarge" style={styles.subtitle}>
+                    What's in your fridge today?
+                </Text>
+            </View>
+
+            <View style={styles.inputContainer}>
+                <TextInput
+                    mode="outlined"
+                    label="Enter ingredients (e.g. chicken, rice)"
+                    value={ingredients}
+                    onChangeText={setIngredients}
+                    style={styles.input}
+                    right={<TextInput.Icon icon="food-apple" />}
+                />
+                <Button
+                    mode="contained"
+                    onPress={handleSearch}
+                    loading={loading}
+                    style={styles.button}
+                    contentStyle={{ height: 50 }}
+                >
+                    Find Recipes
+                </Button>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.listContent}>
+                {recipes.map((recipe) => (
+                    <Card
+                        key={recipe.id}
+                        style={styles.card}
+                        onPress={() => console.log('Navigate to details', recipe.id)}
+                    >
+                        <Card.Cover source={{ uri: recipe.image }} />
+                        <Card.Title
+                            title={recipe.title}
+                            subtitle={`Used Ingredients: ${recipe.usedIngredientCount}`}
+                            titleVariant="titleMedium"
+                        />
+                    </Card>
+                ))}
+                {recipes.length === 0 && !loading && (
+                    <View style={styles.emptyState}>
+                        <Text variant="bodyMedium" style={{ color: theme.colors.placeholder }}>
+                            Enter ingredients to see magic happen!
+                        </Text>
+                    </View>
+                )}
+            </ScrollView>
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  inner: { padding: 20 },
-  title: { textAlign: 'center', marginBottom: 20 },
-  input: { marginBottom: 15 },
-  card: { marginBottom: 15, borderRadius: 12, elevation: 3 },
-  modal: { backgroundColor: 'white', padding: 20 },
+    container: {
+        flex: 1,
+    },
+    header: {
+        padding: 24,
+        paddingBottom: 10,
+    },
+    title: {
+        fontWeight: 'bold',
+    },
+    subtitle: {
+        opacity: 0.7,
+        marginTop: 5,
+    },
+    inputContainer: {
+        padding: 24,
+        paddingTop: 10,
+    },
+    input: {
+        marginBottom: 16,
+        backgroundColor: 'white',
+    },
+    button: {
+        borderRadius: 12,
+    },
+    listContent: {
+        padding: 16,
+        paddingTop: 0,
+    },
+    card: {
+        marginBottom: 16,
+        overflow: 'hidden',
+    },
+    emptyState: {
+        alignItems: 'center',
+        marginTop: 40,
+    },
 });
