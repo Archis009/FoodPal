@@ -8,6 +8,7 @@ import { theme } from './src/theme';
 import HomeScreen from './src/screens/HomeScreen';
 import IngredientsScreen from './src/screens/IngredientsScreen';
 import RecipesScreen from './src/screens/RecipesScreen';
+import RecipeDetailsScreen from './src/screens/RecipeDetailsScreen';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,7 @@ export default function App() {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Ingredients" component={IngredientsScreen} />
           <Stack.Screen name="Recipes" component={RecipesScreen} />
+          <Stack.Screen name="RecipeDetails" component={RecipeDetailsScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>

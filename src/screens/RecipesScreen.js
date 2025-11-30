@@ -50,14 +50,14 @@ export default function RecipesScreen({ navigation, route }) {
                         <Card
                             key={recipe.id}
                             style={[styles.card, { backgroundColor: theme.colors.surface }]}
-                            onPress={() => console.log('Details', recipe.id)}
+                            onPress={() => navigation.navigate('RecipeDetails', { recipeId: recipe.id })}
                         >
                             <Card.Cover source={{ uri: recipe.image }} />
                             <Card.Title
                                 title={recipe.title}
                                 titleStyle={{ color: theme.colors.onSurface, fontWeight: 'bold' }}
-                                subtitle={`Used Ingredients: ${recipe.usedIngredientCount}`}
-                                subtitleStyle={{ color: theme.colors.placeholder }}
+                                subtitle={`Missing Ingredients: ${recipe.missedIngredientCount}`}
+                                subtitleStyle={{ color: theme.colors.error }}
                             />
                         </Card>
                     ))}
