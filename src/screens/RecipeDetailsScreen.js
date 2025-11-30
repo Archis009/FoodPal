@@ -5,11 +5,30 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getRecipeDetails } from '../services/api';
 import { LinearGradient } from 'expo-linear-gradient'; // Ensure expo-linear-gradient is installed if using it, or fallback to View
 
+import { useFavorites } from '../context/FavoritesContext';
+
 export default function RecipeDetailsScreen({ navigation, route }) {
     const theme = useTheme();
     const { recipeId } = route.params;
     const [details, setDetails] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+
+    const isFav = details ? isFavorite(details.id) : false;
+
+    const toggleFavorite = () => {
+        if (!details) return;
+        if (isFav) {
+            removeFavorite(details.id);
+        } else {
+            addFavorite({
+                id: details.id,
+                title: details.title,
+                image: details.image,
+                missedIngredientCount: 0, // Fallback or store actual if passed
+            });
+        }
+    };
 
     useEffect(() => {
         fetchDetails();
@@ -55,6 +74,13 @@ export default function RecipeDetailsScreen({ navigation, route }) {
                         containerColor="rgba(0,0,0,0.5)"
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}
+                    />
+                    <IconButton
+                        icon={isFav ? "heart" : "heart-outline"}
+                        iconColor={isFav ? theme.colors.error : "white"}
+                        containerColor="rgba(0,0,0,0.5)"
+                        style={styles.favoriteButton}
+                        onPress={toggleFavorite}
                     />
                 </View>
 
@@ -142,6 +168,11 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 40,
         left: 10,
+    },
+    favoriteButton: {
+        position: 'absolute',
+        top: 40,
+        right: 10,
     },
     content: {
         padding: 20,
