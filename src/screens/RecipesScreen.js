@@ -17,7 +17,17 @@ export default function RecipesScreen({ navigation, route }) {
     const fetchRecipes = async () => {
         try {
             const data = await searchRecipesByIngredients(ingredients);
-            setRecipes(data);
+
+            // Filter for strict matches (0 missing ingredients)
+            const strictMatches = data.filter(recipe => recipe.missedIngredientCount === 0);
+
+            if (strictMatches.length > 0) {
+                setRecipes(strictMatches);
+            } else {
+                // If no strict matches, show the top results but maybe limit them or show a message
+                // For now, we'll just show the top 10 closest matches
+                setRecipes(data.slice(0, 10));
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -43,7 +53,9 @@ export default function RecipesScreen({ navigation, route }) {
             ) : (
                 <ScrollView contentContainerStyle={styles.list}>
                     <Text variant="labelLarge" style={[styles.resultCount, { color: theme.colors.primary }]}>
-                        Found {recipes.length} recipes for "{ingredients}"
+                        {recipes.every(r => r.missedIngredientCount === 0)
+                            ? `Found ${recipes.length} recipes you can make right now!`
+                            : `No exact matches found. Here are ${recipes.length} close matches:`}
                     </Text>
 
                     {recipes.map((recipe) => (

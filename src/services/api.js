@@ -15,8 +15,8 @@ export const searchRecipesByIngredients = async (ingredients) => {
         const response = await api.get('/findByIngredients', {
             params: {
                 ingredients,
-                number: 10,
-                ranking: 1,
+                number: 50,
+                ranking: 2,
                 ignorePantry: true,
             },
         });
