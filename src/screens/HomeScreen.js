@@ -1,84 +1,35 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView, Image, Keyboard } from 'react-native';
-import { Text, TextInput, Button, Card, ActivityIndicator, useTheme, IconButton } from 'react-native-paper';
+import React from 'react';
+import { StyleSheet, View, Image } from 'react-native';
+import { Text, Button, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { searchRecipesByIngredients } from '../services/api';
 
 export default function HomeScreen({ navigation }) {
     const theme = useTheme();
-    const [ingredients, setIngredients] = useState('');
-    const [recipes, setRecipes] = useState([]);
-    const [loading, setLoading] = useState(false);
-
-    const handleSearch = async () => {
-        if (!ingredients.trim()) return;
-
-        Keyboard.dismiss();
-        setLoading(true);
-        try {
-            const data = await searchRecipesByIngredients(ingredients);
-            setRecipes(data);
-        } catch (error) {
-            // Error handling is managed in api service logs for now
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <View style={styles.header}>
-                <Text variant="displaySmall" style={[styles.title, { color: theme.colors.primary }]}>
-                    FoodPal 🍴
-                </Text>
-                <Text variant="bodyLarge" style={styles.subtitle}>
-                    What's in your fridge today?
-                </Text>
-            </View>
+            <View style={styles.content}>
+                <View style={styles.hero}>
+                    <Text variant="displayMedium" style={[styles.title, { color: theme.colors.primary }]}>
+                        FoodPal
+                    </Text>
+                    <Text variant="headlineSmall" style={[styles.subtitle, { color: theme.colors.onSurface }]}>
+                        Cook with what you have.
+                    </Text>
+                </View>
 
-            <View style={styles.inputContainer}>
-                <TextInput
-                    mode="outlined"
-                    label="Enter ingredients (e.g. chicken, rice)"
-                    value={ingredients}
-                    onChangeText={setIngredients}
-                    style={styles.input}
-                    right={<TextInput.Icon icon="food-apple" />}
-                />
-                <Button
-                    mode="contained"
-                    onPress={handleSearch}
-                    loading={loading}
-                    style={styles.button}
-                    contentStyle={{ height: 50 }}
-                >
-                    Find Recipes
-                </Button>
-            </View>
-
-            <ScrollView contentContainerStyle={styles.listContent}>
-                {recipes.map((recipe) => (
-                    <Card
-                        key={recipe.id}
-                        style={styles.card}
-                        onPress={() => console.log('Navigate to details', recipe.id)}
+                <View style={styles.actionContainer}>
+                    <Button
+                        mode="contained"
+                        onPress={() => navigation.navigate('Ingredients')}
+                        style={styles.button}
+                        contentStyle={styles.buttonContent}
+                        labelStyle={styles.buttonLabel}
                     >
-                        <Card.Cover source={{ uri: recipe.image }} />
-                        <Card.Title
-                            title={recipe.title}
-                            subtitle={`Used Ingredients: ${recipe.usedIngredientCount}`}
-                            titleVariant="titleMedium"
-                        />
-                    </Card>
-                ))}
-                {recipes.length === 0 && !loading && (
-                    <View style={styles.emptyState}>
-                        <Text variant="bodyMedium" style={{ color: theme.colors.placeholder }}>
-                            Enter ingredients to see magic happen!
-                        </Text>
-                    </View>
-                )}
-            </ScrollView>
+                        Get Started
+                    </Button>
+                </View>
+            </View>
         </SafeAreaView>
     );
 }
@@ -87,38 +38,37 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    header: {
-        padding: 24,
-        paddingBottom: 10,
+    content: {
+        flex: 1,
+        justifyContent: 'space-between',
+        padding: 32,
+        paddingBottom: 60,
+    },
+    hero: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     title: {
-        fontWeight: 'bold',
+        fontWeight: '900',
+        letterSpacing: 1,
+        marginBottom: 10,
     },
     subtitle: {
-        opacity: 0.7,
-        marginTop: 5,
+        opacity: 0.8,
+        fontWeight: '300',
     },
-    inputContainer: {
-        padding: 24,
-        paddingTop: 10,
-    },
-    input: {
-        marginBottom: 16,
-        backgroundColor: 'white',
+    actionContainer: {
+        width: '100%',
     },
     button: {
-        borderRadius: 12,
+        borderRadius: 30,
     },
-    listContent: {
-        padding: 16,
-        paddingTop: 0,
+    buttonContent: {
+        height: 60,
     },
-    card: {
-        marginBottom: 16,
-        overflow: 'hidden',
-    },
-    emptyState: {
-        alignItems: 'center',
-        marginTop: 40,
+    buttonLabel: {
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
