@@ -234,8 +234,12 @@ const styles = StyleSheet.create({
   modal: {
     backgroundColor: 'white',
     padding: 20,
-    margin: 20,
-    borderRadius: 12,
-    maxHeight: '80%',
+  },
+  title: {
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  input: {
+    marginBottom: 15,
   },
 });
